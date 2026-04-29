@@ -7,7 +7,7 @@ import { fmtUSD, fmtRelative } from '@/utils'
 import { PageSpinner } from '@/components/ui/Spinner'
 import EmptyState from '@/components/ui/EmptyState'
 
-const COMMISSION_RATES = { 1: '45%', 2: '20%', 3: '10%', 4: '7%', 5: '5%', 6: '4%', 7: '3%', 8: '2%' }
+const COMMISSION_RATES = { 1: '60%', 2: '15%', 3: '5%', 4: '3%'}
 
 function LevelBadge({ level, active, count, onClick }) {
   return (
@@ -67,7 +67,7 @@ function MembersPanel({ level, onClose }) {
 
       {/* Level selector inside panel */}
       <div className="flex gap-1.5 px-5 py-3 border-b border-navy-100 overflow-x-auto">
-        {[1, 2, 3, 4, 5, 6, 7, 8].map(l => (
+        {[1, 2, 3, 4].map(l => (
           <button
             key={l}
             onClick={() => {

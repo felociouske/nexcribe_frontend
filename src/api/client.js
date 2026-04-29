@@ -29,8 +29,6 @@ api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config
-
-    // Stop infinite loop on the refresh endpoint itself
     if (original.url.includes('/auth/token/refresh/')) {
       logout()
       return Promise.reject(error)
