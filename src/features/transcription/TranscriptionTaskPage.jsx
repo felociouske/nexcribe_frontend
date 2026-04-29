@@ -68,7 +68,7 @@ export default function TranscriptionTaskPage() {
 
   // Always route audio through the Django proxy to avoid CORS issues with LibriVox.
   // The proxy endpoint streams the audio from the backend so the browser plays it inline.
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL 
   const getPlayableUrl = () => {
     if (task.audio_file_url) return task.audio_file_url  // already served from backend
     // Pass token as query param — browser <audio> tags cannot set Authorization headers
