@@ -1,0 +1,23 @@
+User-agent: *
+
+# Allow all public pages
+Allow: /
+Allow: /register
+Allow: /login
+Allow: /forgot-password
+Allow: /terms
+Allow: /privacy
+Allow: /refund-policy
+Allow: /deposit-agreement
+Allow: /withdrawal-policy
+
+# Block private dashboard — no value in indexing
+Disallow: /dashboard/
+
+# Block auth callback and token paths
+Disallow: /verify-email
+Disallow: /reset-password
+Disallow: /ref/
+
+# Sitemap location
+Sitemap: https://nexcribe.com/sitemap.xml
