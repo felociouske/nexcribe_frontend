@@ -31,7 +31,6 @@ function LevelBadge({ level, active, count, onClick }) {
     </button>
   )
 }
-
 function MembersPanel({ level, onClose }) {
   const { data, isLoading } = useQuery({
     queryKey: ['downline-members', level],
