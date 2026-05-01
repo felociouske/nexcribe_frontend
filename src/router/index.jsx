@@ -13,6 +13,13 @@ import ForgotPasswordPage from '@/features/auth/ForgotPasswordPage'
 import ResetPasswordPage from '@/features/auth/ResetPasswordPage'
 import VerifyEmailPage from '@/features/auth/VerifyEmailPage'
 
+// Legal pages
+import TermsOfService from '@/features/legal/TermsOfService'
+import PrivacyPolicy from '@/features/legal/PrivacyPolicy'
+import RefundPolicy from '@/features/legal/RefundPolicy'
+import DepositAgreement from '@/features/legal/DepositAgreement'
+import WithdrawalPolicy from '@/features/legal/WithdrawalPolicy'
+
 // Dashboard pages
 import DashboardHome from '@/features/dashboard/DashboardHome'
 import PlansPage from '@/features/plans/PlansPage'
@@ -51,23 +58,30 @@ export default function AppRouter() {
         <Route path="/reset-password" element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/ref/:code" element={<GuestRoute><RegisterPage /></GuestRoute>} />
+
+        {/* Legal pages — accessible to everyone, no auth required */}
+        <Route path="/terms"               element={<TermsOfService />} />
+        <Route path="/privacy"             element={<PrivacyPolicy />} />
+        <Route path="/refund-policy"       element={<RefundPolicy />} />
+        <Route path="/deposit-agreement"   element={<DepositAgreement />} />
+        <Route path="/withdrawal-policy"   element={<WithdrawalPolicy />} />
       </Route>
 
       {/* Dashboard */}
       <Route element={<PrivateRoute><DashboardLayout /></PrivateRoute>}>
-        <Route path="/dashboard" element={<DashboardHome />} />
-        <Route path="/dashboard/plans" element={<PlansPage />} />
-        <Route path="/dashboard/affiliates" element={<AffiliatesPage />} />
-        <Route path="/dashboard/writing" element={<WritingPage />} />
-        <Route path="/dashboard/writing/:id" element={<WritingJobPage />} />
-        <Route path="/dashboard/transcription" element={<TranscriptionPage />} />
-        <Route path="/dashboard/transcription/:id" element={<TranscriptionTaskPage />} />
-        <Route path="/dashboard/games" element={<GamesPage />} />
-        <Route path="/dashboard/games/:slug" element={<GamePlayPage />} />
-        <Route path="/dashboard/wheel" element={<WheelPage />} />
-        <Route path="/dashboard/wallet" element={<WalletPage />} />
-        <Route path="/dashboard/notifications" element={<NotificationsPage />} />
-        <Route path="/dashboard/profile" element={<ProfilePage />} />
+        <Route path="/dashboard"                        element={<DashboardHome />} />
+        <Route path="/dashboard/plans"                  element={<PlansPage />} />
+        <Route path="/dashboard/affiliates"             element={<AffiliatesPage />} />
+        <Route path="/dashboard/writing"                element={<WritingPage />} />
+        <Route path="/dashboard/writing/:id"            element={<WritingJobPage />} />
+        <Route path="/dashboard/transcription"          element={<TranscriptionPage />} />
+        <Route path="/dashboard/transcription/:id"      element={<TranscriptionTaskPage />} />
+        <Route path="/dashboard/games"                  element={<GamesPage />} />
+        <Route path="/dashboard/games/:slug"            element={<GamePlayPage />} />
+        <Route path="/dashboard/wheel"                  element={<WheelPage />} />
+        <Route path="/dashboard/wallet"                 element={<WalletPage />} />
+        <Route path="/dashboard/notifications"          element={<NotificationsPage />} />
+        <Route path="/dashboard/profile"                element={<ProfilePage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
