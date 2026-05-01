@@ -213,61 +213,178 @@ function NumberMatchGame({ grid, onSubmit, loading }) {
   )
 }
 
-function MemoryGame({ onSubmit, loading }) {
-  const EMOJIS = ['🍒', '🍋', '⭐', '💎', '🔔', '7️⃣', '🎯', '🎪']
-  const [cards] = useState(() => {
-    const pairs = [...EMOJIS, ...EMOJIS]
-    return pairs.sort(() => Math.random() - 0.5).map((e, i) => ({ id: i, emoji: e }))
-  })
-  const [flipped, setFlipped] = useState([])
-  const [matched, setMatched] = useState([])
-  const [selected, setSelected] = useState([])
+function VIPChallengeGame({ onSubmit, loading }) {
+  const [currentTask, setCurrentTask] = useState(0)
+  const [answers, setAnswers] = useState({})
+  const [startTime] = useState(Date.now())
 
-  const handleClick = (card) => {
-    if (flipped.includes(card.id) || matched.includes(card.id) || selected.length === 2) return
-    const next = [...selected, card]
-    setFlipped(f => [...f, card.id])
-    setSelected(next)
+  const tasks = [
+    {
+      id: 'math',
+      title: 'Elite Math Challenge',
+      question: 'Solve: (15² + 20²) ÷ √(625) = ?',
+      options: { A: '25', B: '30', C: '35', D: '40' },
+      correct: 'C'
+    },
+    {
+      id: 'logic',
+      title: 'Logic Puzzle',
+      question: 'If all roses are flowers, and some flowers fade quickly, but no roses fade quickly, then:',
+      options: {
+        A: 'Some flowers are not roses',
+        B: 'All flowers fade quickly',
+        C: 'No flowers are roses',
+        D: 'Some roses are flowers'
+      },
+      correct: 'A'
+    },
+    {
+      id: 'pattern',
+      title: 'Pattern Recognition',
+      question: 'What number comes next: 2, 6, 12, 20, 30, ?',
+      options: { A: '36', B: '42', C: '48', D: '54' },
+      correct: 'B'
+    },
+    {
+      id: 'word',
+      title: 'Vocabulary Challenge',
+      question: 'Choose the word that best fits: The CEO\'s _____ decision led to unprecedented company growth.',
+      options: { A: 'audacious', B: 'timorous', C: 'vacillating', D: 'obtuse' },
+      correct: 'A'
+    },
+    {
+      id: 'speed',
+      title: 'Speed Challenge',
+      question: 'Count backwards from 100 by 7s. What is the 5th number?',
+      options: { A: '65', B: '58', C: '51', D: '44' },
+      correct: 'C'
+    }
+  ]
 
-    if (next.length === 2) {
-      const [a, b] = next
-      if (a.emoji === b.emoji) {
-        const newMatched = [...matched, a.id, b.id]
-        setMatched(newMatched)
-        setSelected([])
-        if (newMatched.length === cards.length) {
-          setTimeout(() => onSubmit({ matches: cards.length / 2 }), 400)
-        }
-      } else {
-        setTimeout(() => {
-          setFlipped(f => f.filter(i => i !== a.id && i !== b.id))
-          setSelected([])
-        }, 900)
-      }
+  const handleAnswer = (taskId, answer) => {
+    setAnswers(prev => ({ ...prev, [taskId]: answer }))
+  }
+
+  const nextTask = () => {
+    if (currentTask < tasks.length - 1) {
+      setCurrentTask(currentTask + 1)
     }
   }
 
+  const prevTask = () => {
+    if (currentTask > 0) {
+      setCurrentTask(currentTask - 1)
+    }
+  }
+
+  const calculateScore = () => {
+    let correct = 0
+    tasks.forEach(task => {
+      if (answers[task.id] === task.correct) correct++
+    })
+    const timeBonus = Math.max(0, 300 - Math.floor((Date.now() - startTime) / 1000)) // 5 min time limit
+    return Math.min(100, correct * 20 + Math.floor(timeBonus / 10))
+  }
+
+  const canSubmit = Object.keys(answers).length === tasks.length
+
   return (
-    <div className="card p-6 text-center">
-      <p className="text-navy-500 text-sm mb-6">Flip cards to find matching pairs. Match all 8 pairs to win!</p>
-      <div className="grid grid-cols-4 gap-2 max-w-xs mx-auto mb-4">
-        {cards.map(card => (
-          <button
-            key={card.id}
-            onClick={() => handleClick(card)}
-            className={`w-16 h-16 rounded-xl text-2xl transition-all ${
-              matched.includes(card.id)
-                ? 'bg-teal-500'
-                : flipped.includes(card.id)
-                ? 'bg-navy-900'
-                : 'bg-navy-200 hover:bg-navy-300'
-            }`}
-          >
-            {flipped.includes(card.id) || matched.includes(card.id) ? card.emoji : ''}
-          </button>
-        ))}
+    <div className="space-y-6">
+      {/* Progress */}
+      <div className="card p-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-display font-semibold text-navy-700">
+            VIP Challenge Progress
+          </span>
+          <span className="text-sm text-navy-500">
+            {Object.keys(answers).length} / {tasks.length} completed
+          </span>
+        </div>
+        <div className="w-full bg-navy-100 rounded-full h-2">
+          <div
+            className="bg-teal-500 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${(Object.keys(answers).length / tasks.length) * 100}%` }}
+          />
+        </div>
       </div>
-      <p className="text-navy-400 text-sm">{matched.length / 2} / {cards.length / 2} pairs</p>
+
+      {/* Current Task */}
+      <div className="card p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-display font-bold text-xl text-navy-900">
+            {tasks[currentTask].title}
+          </h3>
+          <span className="text-sm text-navy-500">
+            Task {currentTask + 1} of {tasks.length}
+          </span>
+        </div>
+
+        <p className="text-navy-700 mb-6 leading-relaxed">
+          {tasks[currentTask].question}
+        </p>
+
+        <div className="grid grid-cols-1 gap-3">
+          {Object.entries(tasks[currentTask].options).map(([key, value]) => (
+            <button
+              key={key}
+              onClick={() => handleAnswer(tasks[currentTask].id, key)}
+              className={`p-4 rounded-xl border-2 text-left transition-all ${
+                answers[tasks[currentTask].id] === key
+                  ? 'border-teal-500 bg-teal-50 text-teal-800'
+                  : 'border-navy-200 hover:border-teal-300 text-navy-700'
+              }`}
+            >
+              <span className="font-display font-bold mr-3">{key}.</span>
+              {value}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <div className="flex items-center justify-between">
+        <button
+          onClick={prevTask}
+          disabled={currentTask === 0}
+          className="btn-outline disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          ← Previous
+        </button>
+
+        <div className="text-sm text-navy-500">
+          {answers[tasks[currentTask].id] ? '✓ Answered' : 'Select an answer'}
+        </div>
+
+        {currentTask < tasks.length - 1 ? (
+          <button
+            onClick={nextTask}
+            disabled={!answers[tasks[currentTask].id]}
+            className="btn-outline disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next →
+          </button>
+        ) : (
+          <button
+            onClick={() => onSubmit({ score: calculateScore() })}
+            disabled={loading || !canSubmit}
+            className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Submitting…' : 'Complete Challenge'}
+          </button>
+        )}
+      </div>
+
+      {/* Score Preview */}
+      {canSubmit && (
+        <div className="card p-4 bg-teal-50 border-teal-200">
+          <p className="text-teal-700 text-sm">
+            <strong>Estimated Score:</strong> {calculateScore()}/100
+            <span className="ml-2 text-xs">
+              ({Object.values(answers).filter((ans, i) => ans === tasks[i].correct).length} correct answers)
+            </span>
+          </p>
+        </div>
+      )}
     </div>
   )
 }
@@ -388,6 +505,11 @@ export default function GamePlayPage() {
             />
           ) : slug === 'speed_type' ? (
             <SpeedTypingGame
+              onSubmit={ans => submitResult.mutate(ans)}
+              loading={submitResult.isPending}
+            />
+          ) : slug === 'vip_challenge' ? (
+            <VIPChallengeGame
               onSubmit={ans => submitResult.mutate(ans)}
               loading={submitResult.isPending}
             />

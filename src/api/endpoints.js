@@ -76,6 +76,7 @@ export const paymentsAPI = {
   getDeposits:      ()     => api.get('/payments/deposits/'),
   requestWithdrawal:(data) => api.post('/payments/withdraw/', data),
   getWithdrawals:   ()     => api.get('/payments/withdrawals/'),
+  getMpesaDetails:  ()     => api.get('/payments/mpesa-details/'),
 }
 
 export const notificationsAPI = {

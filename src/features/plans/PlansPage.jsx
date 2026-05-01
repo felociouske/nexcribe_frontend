@@ -78,7 +78,7 @@ export default function PlansPage() {
       <div className="mb-6">
         <h1 className="section-title">Plans</h1>
         <p className="section-subtitle">
-          One-time purchase per category. Upgrade anytime — your higher plan always wins.
+          One-time purchase per category. Switch plans anytime — your current plan always wins.
         </p>
       </div>
 
@@ -109,7 +109,7 @@ export default function PlansPage() {
               You have an active {activeTab.toLowerCase()} plan — Level {myPlanMap[activeTab]}
             </p>
             <p className="text-teal-600 text-xs">
-              You can upgrade to a higher level anytime.
+              You can switch to any plan in this category anytime.
             </p>
           </div>
         </div>
@@ -135,7 +135,6 @@ export default function PlansPage() {
         {plans.map((plan, i) => {
           const myLevel = myPlanMap[plan.category] || 0
           const isOwned = myLevel === plan.level
-          const isLower = myLevel > plan.level
           const isUpgrade = myLevel > 0 && plan.level > myLevel
 
           return (
@@ -179,13 +178,11 @@ export default function PlansPage() {
               </ul>
 
               <button
-                onClick={() => !isOwned && !isLower && setPurchasing(plan)}
-                disabled={isOwned || isLower}
+                onClick={() => !isOwned && setPurchasing(plan)}
+                disabled={isOwned}
                 className={`w-full justify-center text-sm ${
                   isOwned
                     ? 'btn-ghost cursor-default opacity-60'
-                    : isLower
-                    ? 'btn-ghost opacity-30 cursor-not-allowed'
                     : isUpgrade
                     ? 'btn-primary'
                     : 'btn-outline'
@@ -193,8 +190,6 @@ export default function PlansPage() {
               >
                 {isOwned
                   ? 'Current plan'
-                  : isLower
-                  ? 'Below your level'
                   : isUpgrade
                   ? `Upgrade → ${plan.name}`
                   : `Get ${plan.name}`}

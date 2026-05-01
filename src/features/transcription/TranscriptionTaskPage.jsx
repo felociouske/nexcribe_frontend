@@ -197,9 +197,9 @@ export default function TranscriptionTaskPage() {
 
           <div className="bg-teal-50 border border-teal-100 rounded-xl p-3 mb-5 text-xs text-teal-700">
             💡 <strong>Tips:</strong> Type exactly what you hear. Include punctuation.
-            Do not paraphrase or summarise — write every word spoken.
+            Do not paraphrase or summarise - write every word spoken.
             <br/>
-            💰 <strong>Payment is credited instantly</strong> when you submit — no admin review needed.
+            💰 <strong>Payment is credited instantly</strong> when you submit after an automatic review.
           </div>
 
           {/* Transcript textarea */}

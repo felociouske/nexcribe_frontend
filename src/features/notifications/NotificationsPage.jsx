@@ -37,6 +37,7 @@ function NotificationCard({ n, onMarkRead }) {
   const [expanded, setExpanded] = useState(false)
   const isUnread = !n.is_read
   const colorClass = TYPE_COLORS[n.type] || TYPE_COLORS.SYSTEM
+  const adminNote = n.admin_remark || n.metadata?.admin_note
 
   const handleTap = () => {
     setExpanded(prev => !prev)
@@ -77,7 +78,7 @@ function NotificationCard({ n, onMarkRead }) {
 
           {/* Preview — always visible */}
           <p className={`text-navy-500 text-sm mt-0.5 ${expanded ? '' : 'line-clamp-1'}`}>
-            {n.message}
+            {adminNote || n.message}
           </p>
 
           {/* Expand indicator */}
@@ -108,11 +109,10 @@ function NotificationCard({ n, onMarkRead }) {
                   Full Message
                 </p>
                 <p className="text-navy-800 text-sm leading-relaxed whitespace-pre-wrap">
-                  {n.message}
+                  {adminNote || n.message}
                 </p>
 
-                {/* Admin remark / extra metadata */}
-                {n.metadata?.admin_note && (
+                {n.metadata?.admin_note && !n.admin_remark && (
                   <div className="mt-3 border-t border-navy-200 pt-3">
                     <p className="text-xs font-display font-600 text-navy-500 uppercase tracking-wide mb-1">
                       Admin Remark
@@ -135,15 +135,7 @@ function NotificationCard({ n, onMarkRead }) {
                   </div>
                 )}
 
-                {n.link && (
-                  <a
-                    href={n.link}
-                    onClick={e => e.stopPropagation()}
-                    className="mt-3 inline-flex items-center gap-1 text-teal-600 text-sm font-600 hover:underline"
-                  >
-                    View details &rarr;
-                  </a>
-                )}
+
               </div>
             </div>
           </motion.div>

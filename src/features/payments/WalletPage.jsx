@@ -120,6 +120,12 @@ export default function WalletPage() {
     refetchInterval: tab === 'withdrawals' ? 30000 : false,
   })
 
+  const { data: mpesaDetails } = useQuery({
+    queryKey: ['mpesa-details'],
+    queryFn: () => paymentsAPI.getMpesaDetails().then(r => r.data),
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  })
+
   // ── Mutations ──
   const deposit = useMutation({
     mutationFn: (data) => paymentsAPI.requestDeposit(data),
@@ -249,8 +255,8 @@ export default function WalletPage() {
         <span className="text-xl flex-shrink-0 mt-0.5">💡</span>
         <div className="text-sm text-amber-800">
           <strong>How deposits work:</strong> Send money via M-Pesa, then submit your
-          M-Pesa code, phone number and amount here. Admin will verify and approve within
-          24 hours — funds will appear in your <strong>Deposit Wallet</strong> and can
+          M-Pesa code, phone number and amount here. Deposit agent will verify and approve within
+          20 minutes - funds will appear in your <strong>Deposit Wallet</strong> and can
           be used to purchase plans.
         </div>
       </div>
@@ -278,11 +284,11 @@ export default function WalletPage() {
 
       {/* Transactions */}
       {tab === 'transactions' && (
-        <div className="card overflow-hidden">
+        <div className="card overflow-x-auto">
           {txns.length === 0 ? (
             <EmptyState icon="💳" title="No transactions yet" desc="Make a deposit to get started." />
           ) : (
-            <table className="tbl">
+            <table className="tbl min-w-[640px]">
               <thead>
                 <tr>
                   <th>Code</th>
@@ -318,7 +324,7 @@ export default function WalletPage() {
 
       {/* Deposits */}
       {tab === 'deposits' && (
-        <div className="card overflow-hidden">
+        <div className="card overflow-x-auto">
           {deposits.length === 0 ? (
             <EmptyState
               icon="🏦"
@@ -331,7 +337,7 @@ export default function WalletPage() {
               }
             />
           ) : (
-            <table className="tbl">
+            <table className="tbl min-w-[640px]">
               <thead>
                 <tr>
                   <th>Txn Code</th>
@@ -369,11 +375,11 @@ export default function WalletPage() {
 
       {/* Withdrawals */}
       {tab === 'withdrawals' && (
-        <div className="card overflow-hidden">
+        <div className="card overflow-x-auto">
           {withdrawals.length === 0 ? (
             <EmptyState icon="💸" title="No withdrawals yet" />
           ) : (
-            <table className="tbl">
+            <table className="tbl min-w-[640px]">
               <thead>
                 <tr>
                   <th>Code</th>
@@ -418,10 +424,10 @@ export default function WalletPage() {
           <div className="bg-teal-50 border border-teal-100 rounded-xl p-4 space-y-2">
             <p className="font-display font-semibold text-teal-800 text-sm">How to deposit:</p>
             <ol className="space-y-1 text-sm text-teal-700">
-              <li>1. Send money via M-Pesa to our paybill/number</li>
+              <li>1. Send money via M-Pesa to <strong className="font-bold">{mpesaDetails?.phone_number || 'Loading...'} ({mpesaDetails?.account_name || 'Loading...'})</strong></li>
               <li>2. Copy the M-Pesa confirmation code (e.g. QJK2ABC123)</li>
               <li>3. Fill in the form below and submit</li>
-              <li>4. Admin approves within 24 hours → funds appear in Deposit Wallet</li>
+              <li>4. Admin approves within 5-10 minutes → funds appear in Deposit Wallet</li>
             </ol>
           </div>
 

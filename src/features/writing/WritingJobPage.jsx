@@ -155,25 +155,6 @@ export default function WritingJobPage() {
         )}
       </div>
 
-      {/* Accept */}
-      {canAccept && (
-        <div className="card p-6 mb-5">
-          <h2 className="font-display font-bold text-navy-900 mb-2">Accept this job</h2>
-          <p className="text-navy-500 text-sm mb-4">
-            Accepting this job adds it to your <strong>My Jobs</strong> list. The job remains
-            visible to other writers — multiple people can complete the same job.
-            Upload your document when ready to earn instantly.
-          </p>
-          <button
-            onClick={() => accept.mutate()}
-            disabled={accept.isPending}
-            className="btn-primary"
-          >
-            {accept.isPending ? 'Accepting…' : 'Accept Job'}
-          </button>
-        </div>
-      )}
-
       {/* Submit document */}
       {canSubmit && (
         <div className="card p-6 mb-5">
@@ -182,7 +163,7 @@ export default function WritingJobPage() {
           </h2>
           <p className="text-navy-500 text-sm mb-5">
             Write your article offline, then upload the completed document here.
-            Payment is credited to your Account Wallet <strong>instantly</strong> upon submission — no admin review needed.
+            Payment is credited to your Account Wallet <strong>instantly</strong> upon submission after an automatic review.
           </p>
 
           <div className="space-y-4">

@@ -28,7 +28,7 @@ export default function Sidebar({ open, onClose }) {
   return (
     <aside
       className={cn(
-        'fixed md:sticky top-0 left-0 z-30 h-screen w-64 flex flex-col',
+        'fixed top-0 left-0 bottom-0 md:sticky md:top-0 md:h-screen z-30 w-64 flex flex-col',
         'bg-navy-900 transition-transform duration-300 ease-in-out',
         open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
       )}
@@ -67,7 +67,7 @@ export default function Sidebar({ open, onClose }) {
       </nav>
 
       {/* User */}
-      <div className="border-t border-white/10 p-3">
+      <div className="border-t border-white/10 p-3 pb-6 md:pb-3">
         <NavLink
           to="/dashboard/profile"
           onClick={onClose}

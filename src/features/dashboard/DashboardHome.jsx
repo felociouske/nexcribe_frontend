@@ -135,7 +135,6 @@ export default function DashboardHome() {
   if (walletsLoading) return <PageSpinner />
 
   const aw = wallets?.account_wallet
-  const yw = wallets?.yields_wallet
   const dw = wallets?.deposit_wallet
   const cw = wallets?.cashback_wallet
   const recentTxns = txnData?.results || []
@@ -165,9 +164,6 @@ export default function DashboardHome() {
             Virtual Card
           </p>
           <VirtualCard card={card} />
-          <p className="text-center text-navy-400 text-xs mt-3">
-            Use for platform identification · Not a real payment card
-          </p>
         </motion.div>
 
         {/* 4 Wallet Cards */}
@@ -185,16 +181,6 @@ export default function DashboardHome() {
               subValue={fmtUSD(aw?.total_earned_usd)}
               to="/dashboard/wallet"
               color="teal"
-            />
-            <WalletCard
-              label="Yields"
-              icon="📈"
-              balance_usd={yw?.balance_usd}
-              balance_kes={yw?.balance_kes}
-              sub="Total earned"
-              subValue={fmtUSD(yw?.total_earned_usd)}
-              to="/dashboard/wallet"
-              color="navy"
             />
             <WalletCard
               label="Deposit"
@@ -265,8 +251,8 @@ export default function DashboardHome() {
             </Link>
           </div>
         ) : (
-          <div className="card overflow-hidden">
-            <table className="tbl">
+          <div className="card overflow-x-auto">
+            <table className="tbl min-w-[640px]">
               <thead>
                 <tr>
                   <th>Code</th>
