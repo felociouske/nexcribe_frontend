@@ -204,7 +204,30 @@ export default function WalletPage() {
           actionDisabled={parseFloat(aw?.balance_usd || 0) < 2}
           color="teal"
         />
-
+        <BankWalletCard
+          label="Deposit Wallet"
+          icon="🏦"
+          balance_usd={dw?.balance_usd}
+          balance_kes={dw?.balance_kes}
+          meta={[
+            { key: 'Total deposited', val: fmtUSD(dw?.total_deposited_usd) },
+            { key: 'Total spent', val: fmtUSD(dw?.total_spent_usd) },
+          ]}
+          onAction={() => setDepositModal(true)}
+          actionLabel="+ Deposit via M-Pesa"
+          actionDisabled={false}
+          color="coral"
+        />
+        <BankWalletCard
+          label="Extras"
+          icon="🎁"
+          balance_usd={cw?.balance_usd}
+          balance_kes={cw?.balance_kes}
+          meta={[
+            { key: 'Total earned', val: fmtUSD(cw?.total_earned_usd) },
+          ]}
+          color="green"
+        />
         <BankWalletCard
           label="Yields Wallet"
           icon="📈"
@@ -222,43 +245,6 @@ export default function WalletPage() {
           actionDisabled={parseFloat(yw?.balance_usd || 0) < 2}
           color="navy"
         />
-
-        <BankWalletCard
-          label="Deposit Wallet"
-          icon="🏦"
-          balance_usd={dw?.balance_usd}
-          balance_kes={dw?.balance_kes}
-          meta={[
-            { key: 'Total deposited', val: fmtUSD(dw?.total_deposited_usd) },
-            { key: 'Total spent', val: fmtUSD(dw?.total_spent_usd) },
-          ]}
-          onAction={() => setDepositModal(true)}
-          actionLabel="+ Deposit via M-Pesa"
-          actionDisabled={false}
-          color="coral"
-        />
-
-        <BankWalletCard
-          label="Cashback Wallet"
-          icon="🎁"
-          balance_usd={cw?.balance_usd}
-          balance_kes={cw?.balance_kes}
-          meta={[
-            { key: 'Total earned', val: fmtUSD(cw?.total_earned_usd) },
-          ]}
-          color="green"
-        />
-      </div>
-
-      {/* Info banner about deposit flow */}
-      <div className="card p-4 bg-amber-50 border-amber-200 mb-6 flex items-start gap-3">
-        <span className="text-xl flex-shrink-0 mt-0.5">💡</span>
-        <div className="text-sm text-amber-800">
-          <strong>How deposits work:</strong> Send money via M-Pesa, then submit your
-          M-Pesa code, phone number and amount here. Deposit agent will verify and approve within
-          20 minutes - funds will appear in your <strong>Deposit Wallet</strong> and can
-          be used to purchase plans.
-        </div>
       </div>
 
       {/* Tabs */}
@@ -424,11 +410,12 @@ export default function WalletPage() {
           <div className="bg-teal-50 border border-teal-100 rounded-xl p-4 space-y-2">
             <p className="font-display font-semibold text-teal-800 text-sm">How to deposit:</p>
             <ol className="space-y-1 text-sm text-teal-700">
-              <li>1. Send money via M-Pesa to <strong className="font-bold">{mpesaDetails?.phone_number || 'Loading...'} ({mpesaDetails?.account_name || 'Loading...'})</strong></li>
+              <li>1. Send money via M-Pesa to our deposit exchange agent <strong className="font-bold">{mpesaDetails?.phone_number || 'Loading...'} ({mpesaDetails?.account_name || 'Loading...'})</strong></li>
               <li>2. Copy the M-Pesa confirmation code (e.g. QJK2ABC123)</li>
               <li>3. Fill in the form below and submit</li>
               <li>4. Admin approves within 5-10 minutes → funds appear in Deposit Wallet</li>
             </ol>
+            <p className="font-display font-semibold text-teal-800 text-sm">NOTE: We are updating our system and more advanced deposit methods will be available soon</p>
           </div>
 
           <div>
