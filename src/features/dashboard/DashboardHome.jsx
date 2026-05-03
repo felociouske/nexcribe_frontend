@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
@@ -16,43 +16,140 @@ const fade = (i = 0) => ({
   transition: { duration: 0.4, delay: i * 0.07 },
 })
 
-// ── Virtual Card ──────────────────────────────────────────────────────────────
+// ── Virtual Card (flip on click) ──────────────────────────────────────────────
 function VirtualCard({ card }) {
+  const [flipped, setFlipped] = useState(false)
   if (!card) return null
   const parts = (card.card_number || '').split(' ')
+  const lastFour = parts[3] || '••••'
+
   return (
     <div
-      className="relative w-full h-44 rounded-2xl overflow-hidden select-none"
-      style={{
-        background: 'linear-gradient(135deg, #0d1b2e 0%, #1e3a5f 50%, #0a7c5c 100%)',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-      }}
+      className="relative w-full select-none cursor-pointer"
+      style={{ height: '176px', perspective: '1200px' }}
+      onClick={() => setFlipped(f => !f)}
     >
-      <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5" />
-      <div className="absolute -bottom-10 -left-10 w-48 h-48 rounded-full bg-white/5" />
-      <div className="relative h-full flex flex-col justify-between p-6">
-        <div className="flex items-center justify-between">
-          <span className="font-display text-white text-lg tracking-tight">Nexcribe</span>
-          <div className="flex">
-            <div className="w-7 h-7 rounded-full bg-coral-500/80" />
-            <div className="w-7 h-7 rounded-full bg-yellow-400/60 -ml-3" />
+      {/* Card wrapper — rotates on flip */}
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          transformStyle: 'preserve-3d',
+          transition: 'transform 0.65s cubic-bezier(0.4, 0.2, 0.2, 1)',
+          transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+        }}
+      >
+        {/* ── FRONT ── */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            borderRadius: '1rem',
+            overflow: 'hidden',
+            background: 'linear-gradient(135deg, #0d1b2e 0%, #1e3a5f 50%, #0a7c5c 100%)',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          }}
+        >
+          {/* Decorative circles */}
+          <div style={{ position: 'absolute', top: '-2rem', right: '-2rem', width: '10rem', height: '10rem', borderRadius: '9999px', background: 'rgba(255,255,255,0.05)' }} />
+          <div style={{ position: 'absolute', bottom: '-2.5rem', left: '-2.5rem', width: '12rem', height: '12rem', borderRadius: '9999px', background: 'rgba(255,255,255,0.05)' }} />
+
+          <div style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.5rem' }}>
+            {/* Top row */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span className="font-display text-white" style={{ fontSize: '1.125rem', letterSpacing: '-0.025em' }}>Nexcribe</span>
+              <div style={{ display: 'flex' }}>
+                <div style={{ width: '1.75rem', height: '1.75rem', borderRadius: '9999px', background: 'rgba(255,100,80,0.8)' }} />
+                <div style={{ width: '1.75rem', height: '1.75rem', borderRadius: '9999px', background: 'rgba(250,200,60,0.6)', marginLeft: '-0.75rem' }} />
+              </div>
+            </div>
+
+            {/* Chip + card number */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              {/* EMV chip */}
+              <div style={{ width: '2rem', height: '1.5rem', borderRadius: '0.25rem', background: 'linear-gradient(135deg, #d4af37, #f0d060)', flexShrink: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px', padding: '3px' }}>
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} style={{ background: 'rgba(0,0,0,0.25)', borderRadius: '1px' }} />
+                ))}
+              </div>
+              {parts.map((group, i) => (
+                <span key={i} className="font-mono text-white" style={{ fontSize: '0.9rem', letterSpacing: '0.15em' }}>
+                  {i < 3 ? '••••' : group}
+                </span>
+              ))}
+            </div>
+
+            {/* Bottom row */}
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+              <div>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2px' }}>Card Holder</p>
+                <p className="font-display font-semibold text-white" style={{ fontSize: '0.875rem', letterSpacing: '0.05em' }}>{card.card_name}</p>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2px' }}>Expires</p>
+                <p className="font-mono text-white" style={{ fontSize: '0.875rem' }}>{card.expiry}</p>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          {parts.map((group, i) => (
-            <span key={i} className="font-mono text-white text-base tracking-widest">
-              {i < 3 ? '••••' : group}
-            </span>
-          ))}
-        </div>
-        <div className="flex items-end justify-between">
-          <div>
-            <p className="text-white/40 text-xs uppercase tracking-widest mb-0.5">Card Holder</p>
-            <p className="text-white font-display font-semibold text-sm tracking-wide">{card.card_name}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-white/40 text-xs uppercase tracking-widest mb-0.5">Expires</p>
-            <p className="text-white font-mono text-sm">{card.expiry}</p>
+
+        {/* ── BACK ── */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            transform: 'rotateY(180deg)',
+            borderRadius: '1rem',
+            overflow: 'hidden',
+            background: 'linear-gradient(135deg, #0a1628 0%, #0f2a47 60%, #082e22 100%)',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
+          }}
+        >
+          {/* Magnetic stripe */}
+          <div style={{ width: '100%', height: '2.5rem', background: '#111', marginTop: '1.5rem' }} />
+
+          <div style={{ padding: '0.875rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {/* Signature strip + CVV */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{
+                flex: 1, height: '2rem', borderRadius: '0.25rem',
+                background: 'repeating-linear-gradient(90deg, #f0ece0 0px, #f0ece0 8px, #e0dcd0 8px, #e0dcd0 16px)',
+                display: 'flex', alignItems: 'center', paddingLeft: '0.5rem',
+              }}>
+                <span style={{ fontSize: '0.6rem', color: '#555', fontFamily: 'serif', fontStyle: 'italic' }}>
+                  {card.card_name}
+                </span>
+              </div>
+              <div style={{ background: 'white', borderRadius: '0.25rem', padding: '0 0.5rem', height: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: '3.5rem' }}>
+                <p style={{ fontSize: '0.5rem', color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em' }}>CVV</p>
+                <p className="font-mono" style={{ fontSize: '0.875rem', fontWeight: 700, color: '#0d1b2e', letterSpacing: '0.1em' }}>{card.cvv || '•••'}</p>
+              </div>
+            </div>
+
+            {/* Card number last 4 */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Card Number</span>
+              <span className="font-mono text-white" style={{ fontSize: '0.8rem', letterSpacing: '0.12em' }}>
+                •••• •••• •••• {lastFour}
+              </span>
+            </div>
+
+            {/* Network logo + network label */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
+              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.6rem' }}>
+                This card is issued by Nexcribe Ltd.<br />
+                Valid for authorised use only.
+              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                <div style={{ width: '1.5rem', height: '1.5rem', borderRadius: '9999px', background: 'rgba(255,100,80,0.7)' }} />
+                <div style={{ width: '1.5rem', height: '1.5rem', borderRadius: '9999px', background: 'rgba(250,200,60,0.5)', marginLeft: '-0.5rem' }} />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -60,23 +157,29 @@ function VirtualCard({ card }) {
   )
 }
 
-// ── Wallet Card ───────────────────────────────────────────────────────────────
-function WalletCard({ label, icon, balance_usd, balance_kes, sub, subValue, color }) {
+// ── Wallet Card (clickable) ───────────────────────────────────────────────────
+function WalletCard({ label, icon, balance_usd, balance_kes, sub, subValue, color, onClick }) {
   const colors = {
-    teal:  { border: 'border-teal-200',  icon: 'bg-teal-50 text-teal-600',   amount: 'text-teal-700',  bg: 'bg-teal-50/30' },
-    coral: { border: 'border-coral-200', icon: 'bg-coral-50 text-coral-600', amount: 'text-coral-700', bg: 'bg-coral-50/30' },
-    green: { border: 'border-green-200', icon: 'bg-green-50 text-green-600', amount: 'text-green-700', bg: 'bg-green-50/30' },
+    teal:  { border: 'border-teal-200',  icon: 'bg-teal-50 text-teal-600',   amount: 'text-teal-700',  bg: 'bg-teal-50/30',   hover: 'hover:border-teal-400 hover:shadow-md hover:-translate-y-0.5' },
+    coral: { border: 'border-coral-200', icon: 'bg-coral-50 text-coral-600', amount: 'text-coral-700', bg: 'bg-coral-50/30',  hover: 'hover:border-coral-400 hover:shadow-md hover:-translate-y-0.5' },
+    green: { border: 'border-green-200', icon: 'bg-green-50 text-green-600', amount: 'text-green-700', bg: 'bg-green-50/30',  hover: 'hover:border-green-400 hover:shadow-md hover:-translate-y-0.5' },
   }
   const c = colors[color] || colors.teal
   return (
-    <div className={`card ${c.bg} border ${c.border} p-5 flex flex-col gap-3`}>
+    <button
+      onClick={onClick}
+      className={`card ${c.bg} border ${c.border} ${c.hover} p-5 flex flex-col gap-3 w-full text-left cursor-pointer transition-all duration-200 group`}
+    >
       <div className="flex items-center justify-between">
         <div className={`w-9 h-9 rounded-xl ${c.icon} flex items-center justify-center text-lg`}>
           {icon}
         </div>
-        <span className="text-navy-400 text-xs font-display font-semibold uppercase tracking-wider">
-          {label}
-        </span>
+        <div className="flex items-center gap-1">
+          <span className="text-navy-400 text-xs font-display font-semibold uppercase tracking-wider">
+            {label}
+          </span>
+          <span className="text-navy-300 text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+        </div>
       </div>
       <div className="border-t border-dashed border-navy-100" />
       <div>
@@ -89,7 +192,7 @@ function WalletCard({ label, icon, balance_usd, balance_kes, sub, subValue, colo
           <span className="font-display font-semibold text-navy-600">{subValue}</span>
         </div>
       )}
-    </div>
+    </button>
   )
 }
 
@@ -97,6 +200,7 @@ function WalletCard({ label, icon, balance_usd, balance_kes, sub, subValue, colo
 export default function DashboardHome() {
   const { user } = useAuthStore()
   const qc = useQueryClient()
+  const navigate = useNavigate()
   const [depositModal, setDepositModal] = useState(false)
   const [withdrawModal, setWithdrawModal] = useState(false)
 
@@ -198,11 +302,11 @@ export default function DashboardHome() {
 
         {/* Virtual Card */}
         <motion.div {...fade(1)}>
-          <p className="text-xs font-display font-semibold text-navy-500 uppercase tracking-widest mb-3">
+          <p className="text-xs font-display font-semibold text-navy-500 uppercase tracking-widest mb-6">
             Virtual Card
           </p>
           <VirtualCard card={card} />
-          <p className="text-navy-500 text-sm mt-2">
+          <p className="text-navy-500 text-sm mt-3">
             Use this card for online purchases and subscriptions. It's linked to your account wallet.
           </p>
           <p className="text-navy-500 text-sm mt-2">
@@ -211,14 +315,12 @@ export default function DashboardHome() {
           </p>
         </motion.div>
 
-        {/* Wallets — full width on mobile, 3 cols on sm+ */}
+        {/* Wallets */}
         <motion.div {...fade(2)}>
           <p className="text-xs font-display font-semibold text-navy-500 uppercase tracking-widest mb-3">
             My Wallets
           </p>
 
-          {/* grid-cols-1 on mobile → each card is full width */}
-          {/* sm:grid-cols-3 on tablet+ → 3 columns */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <WalletCard
               label="Account"
@@ -228,6 +330,7 @@ export default function DashboardHome() {
               sub="Total earned"
               subValue={fmtUSD(aw?.total_earned_usd)}
               color="teal"
+              onClick={() => navigate('/dashboard/wallet')}
             />
             <WalletCard
               label="Deposit"
@@ -237,6 +340,7 @@ export default function DashboardHome() {
               sub="Total deposited"
               subValue={fmtUSD(dw?.total_deposited_usd)}
               color="coral"
+              onClick={() => navigate('/dashboard/wallet')}
             />
             <WalletCard
               label="Extras"
@@ -246,10 +350,11 @@ export default function DashboardHome() {
               sub="Total earned"
               subValue={fmtUSD(cw?.total_earned_usd)}
               color="green"
+              onClick={() => navigate('/dashboard/wallet')}
             />
           </div>
 
-          {/* Deposit + Withdraw action buttons below wallets */}
+          {/* Deposit + Withdraw action buttons */}
           <div className="grid grid-cols-2 gap-3 mt-4">
             <button
               onClick={() => setDepositModal(true)}
@@ -327,7 +432,7 @@ export default function DashboardHome() {
         )}
       </motion.div>
 
-      {/* ── Deposit Modal — exact same as WalletPage ── */}
+      {/* ── Deposit Modal ── */}
       <Modal
         open={depositModal}
         onClose={() => { setDepositModal(false); depositForm.reset() }}
@@ -404,7 +509,7 @@ export default function DashboardHome() {
         </form>
       </Modal>
 
-      {/* ── Withdraw Modal — Account Wallet only, exact same as WalletPage ── */}
+      {/* ── Withdraw Modal ── */}
       <Modal
         open={withdrawModal}
         onClose={() => { setWithdrawModal(false); withdrawForm.reset() }}

@@ -74,6 +74,14 @@ export default function WritingJobPage() {
   const canSubmit = job.status === 'OPEN' && isAssignedToMe
   const history = historyData || []
 
+  // Config per action type
+  const ACTION_CONFIG = {
+    APPROVED: { icon: '✓', bg: 'bg-teal-100', text: 'text-teal-700', border: 'border-teal-200', label: 'Approved' },
+    REJECTED: { icon: '✗', bg: 'bg-red-100',  text: 'text-red-700',  border: 'border-red-200',  label: 'Rejected' },
+    SUBMITTED:{ icon: '↑', bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200', label: 'Submitted' },
+  }
+  const defaultAction = { icon: '→', bg: 'bg-navy-100', text: 'text-navy-700', border: 'border-navy-200', label: '' }
+
   return (
     <div className="page max-w-3xl">
       <button onClick={() => navigate(-1)} className="btn-ghost mb-4 -ml-2">
@@ -267,45 +275,83 @@ export default function WritingJobPage() {
         </div>
       )}
 
-      {/* History timeline */}
+      {/* ── History timeline — horizontal scroll ── */}
       {history.length > 0 && (
         <div className="card p-6">
-          <h2 className="font-display font-bold text-navy-900 mb-4">Activity History</h2>
-          <div className="space-y-3">
-            {history.map((h, i) => (
-              <div key={h.id} className="flex items-start gap-3">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs flex-shrink-0 ${
-                  h.action === 'APPROVED' ? 'bg-teal-100 text-teal-700' :
-                  h.action === 'REJECTED' ? 'bg-red-100 text-red-700' :
-                  h.action === 'SUBMITTED' ? 'bg-blue-100 text-blue-700' :
-                  'bg-navy-100 text-navy-700'
-                }`}>
-                  {h.action === 'APPROVED' ? '✓' :
-                   h.action === 'REJECTED' ? '✗' :
-                   h.action === 'SUBMITTED' ? '↑' : '→'}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <p className="font-display font-semibold text-navy-800 text-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-display font-bold text-navy-900">Activity History</h2>
+            <span className="text-xs text-navy-400">{history.length} event{history.length !== 1 ? 's' : ''}</span>
+          </div>
+
+          {/* Scroll hint — only visible when content overflows */}
+          <div
+            className="overflow-x-auto -mx-6 px-6 pb-2"
+            style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 transparent' }}
+          >
+            {/* Connector line sits behind the cards */}
+            <div className="relative flex items-stretch gap-3" style={{ minWidth: 'max-content' }}>
+
+              {/* Horizontal rule through the icon row — purely decorative */}
+              {history.length > 1 && (
+                <div
+                  aria-hidden="true"
+                  className="absolute top-5 left-4 right-4 h-px bg-navy-100 z-0"
+                  style={{ top: '20px' }}
+                />
+              )}
+
+              {history.map((h, i) => {
+                const cfg = ACTION_CONFIG[h.action] || defaultAction
+                return (
+                  <div
+                    key={h.id}
+                    className={`relative z-10 flex flex-col bg-white border rounded-xl p-4 ${cfg.border}`}
+                    style={{ minWidth: '180px', maxWidth: '220px' }}
+                  >
+                    {/* Step number + icon */}
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${cfg.bg} ${cfg.text} border ${cfg.border}`}>
+                        {cfg.icon}
+                      </div>
+                      <span className="text-xs text-navy-400 font-mono">#{i + 1}</span>
+                    </div>
+
+                    {/* Action label */}
+                    <p className={`font-display font-bold text-sm mb-1 ${cfg.text}`}>
                       {h.action}
                     </p>
-                    <span className="text-navy-400 text-xs">{fmtRelative(h.created_at)}</span>
+
+                    {/* Timestamp */}
+                    <p className="text-navy-400 text-xs mb-2">{fmtRelative(h.created_at)}</p>
+
+                    {/* Optional note */}
+                    {h.note && (
+                      <p className="text-navy-500 text-xs leading-relaxed mb-2 border-t border-navy-100 pt-2">
+                        {h.note}
+                      </p>
+                    )}
+
+                    {/* Amount credited */}
+                    {h.amount_usd && (
+                      <p className="text-teal-600 text-sm font-display font-bold mt-auto">
+                        +{fmtUSD(h.amount_usd)}
+                      </p>
+                    )}
+
+                    {/* Txn code */}
+                    {h.transaction_code && (
+                      <span className="txn-code mt-1 inline-block text-xs">{h.transaction_code}</span>
+                    )}
                   </div>
-                  {h.note && (
-                    <p className="text-navy-500 text-xs mt-0.5">{h.note}</p>
-                  )}
-                  {h.amount_usd && (
-                    <p className="text-teal-600 text-sm font-display font-bold mt-1">
-                      +{fmtUSD(h.amount_usd)} credited to Account Wallet
-                    </p>
-                  )}
-                  {h.transaction_code && (
-                    <span className="txn-code mt-1 inline-block">{h.transaction_code}</span>
-                  )}
-                </div>
-              </div>
-            ))}
+                )
+              })}
+            </div>
           </div>
+
+          {/* Scroll affordance text — only shown if >3 items */}
+          {history.length > 3 && (
+            <p className="text-xs text-navy-400 mt-3 text-right">← scroll to see all events →</p>
+          )}
         </div>
       )}
     </div>
