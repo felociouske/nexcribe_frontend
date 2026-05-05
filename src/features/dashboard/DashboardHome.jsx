@@ -17,11 +17,13 @@ const fade = (i = 0) => ({
 })
 
 // ── Virtual Card (flip on click) ──────────────────────────────────────────────
-function VirtualCard({ card }) {
+function VirtualCard({ card, user }) {
   const [flipped, setFlipped] = useState(false)
   if (!card) return null
+
   const parts = (card.card_number || '').split(' ')
   const lastFour = parts[3] || '••••'
+  const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(' ') || 'Card Holder'
 
   return (
     <div
@@ -29,7 +31,6 @@ function VirtualCard({ card }) {
       style={{ height: '176px', perspective: '1200px' }}
       onClick={() => setFlipped(f => !f)}
     >
-      {/* Card wrapper — rotates on flip */}
       <div
         style={{
           position: 'relative',
@@ -40,25 +41,12 @@ function VirtualCard({ card }) {
           transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         }}
       >
-        {/* ── FRONT ── */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden',
-            borderRadius: '1rem',
-            overflow: 'hidden',
-            background: 'linear-gradient(135deg, #0d1b2e 0%, #1e3a5f 50%, #0a7c5c 100%)',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-          }}
-        >
-          {/* Decorative circles */}
+        {/* FRONT */}
+        <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', borderRadius: '1rem', overflow: 'hidden', background: 'linear-gradient(135deg, #0d1b2e 0%, #1e3a5f 50%, #0a7c5c 100%)', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
           <div style={{ position: 'absolute', top: '-2rem', right: '-2rem', width: '10rem', height: '10rem', borderRadius: '9999px', background: 'rgba(255,255,255,0.05)' }} />
           <div style={{ position: 'absolute', bottom: '-2.5rem', left: '-2.5rem', width: '12rem', height: '12rem', borderRadius: '9999px', background: 'rgba(255,255,255,0.05)' }} />
 
           <div style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.5rem' }}>
-            {/* Top row */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span className="font-display text-white" style={{ fontSize: '1.125rem', letterSpacing: '-0.025em' }}>Nexcribe</span>
               <div style={{ display: 'flex' }}>
@@ -67,9 +55,7 @@ function VirtualCard({ card }) {
               </div>
             </div>
 
-            {/* Chip + card number */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              {/* EMV chip */}
               <div style={{ width: '2rem', height: '1.5rem', borderRadius: '0.25rem', background: 'linear-gradient(135deg, #d4af37, #f0d060)', flexShrink: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px', padding: '3px' }}>
                 {[...Array(4)].map((_, i) => (
                   <div key={i} style={{ background: 'rgba(0,0,0,0.25)', borderRadius: '1px' }} />
@@ -82,11 +68,11 @@ function VirtualCard({ card }) {
               ))}
             </div>
 
-            {/* Bottom row */}
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
               <div>
                 <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2px' }}>Card Holder</p>
-                <p className="font-display font-semibold text-white" style={{ fontSize: '0.875rem', letterSpacing: '0.05em' }}>{card.card_name}</p>
+                {/* Changed: was card.card_name */}
+                <p className="font-display font-semibold text-white" style={{ fontSize: '0.875rem', letterSpacing: '0.05em' }}>{fullName}</p>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2px' }}>Expires</p>
@@ -96,33 +82,16 @@ function VirtualCard({ card }) {
           </div>
         </div>
 
-        {/* ── BACK ── */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden',
-            transform: 'rotateY(180deg)',
-            borderRadius: '1rem',
-            overflow: 'hidden',
-            background: 'linear-gradient(135deg, #0a1628 0%, #0f2a47 60%, #082e22 100%)',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
-          }}
-        >
-          {/* Magnetic stripe */}
+        {/* BACK */}
+        <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)', borderRadius: '1rem', overflow: 'hidden', background: 'linear-gradient(135deg, #0a1628 0%, #0f2a47 60%, #082e22 100%)', boxShadow: '0 20px 60px rgba(0,0,0,0.35)' }}>
           <div style={{ width: '100%', height: '2.5rem', background: '#111', marginTop: '1.5rem' }} />
 
           <div style={{ padding: '0.875rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {/* Signature strip + CVV */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div style={{
-                flex: 1, height: '2rem', borderRadius: '0.25rem',
-                background: 'repeating-linear-gradient(90deg, #f0ece0 0px, #f0ece0 8px, #e0dcd0 8px, #e0dcd0 16px)',
-                display: 'flex', alignItems: 'center', paddingLeft: '0.5rem',
-              }}>
+              <div style={{ flex: 1, height: '2rem', borderRadius: '0.25rem', background: 'repeating-linear-gradient(90deg, #f0ece0 0px, #f0ece0 8px, #e0dcd0 8px, #e0dcd0 16px)', display: 'flex', alignItems: 'center', paddingLeft: '0.5rem' }}>
+                {/* Changed: was card.card_name */}
                 <span style={{ fontSize: '0.6rem', color: '#555', fontFamily: 'serif', fontStyle: 'italic' }}>
-                  {card.card_name}
+                  {fullName}
                 </span>
               </div>
               <div style={{ background: 'white', borderRadius: '0.25rem', padding: '0 0.5rem', height: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: '3.5rem' }}>
@@ -131,7 +100,6 @@ function VirtualCard({ card }) {
               </div>
             </div>
 
-            {/* Card number last 4 */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Card Number</span>
               <span className="font-mono text-white" style={{ fontSize: '0.8rem', letterSpacing: '0.12em' }}>
@@ -139,7 +107,6 @@ function VirtualCard({ card }) {
               </span>
             </div>
 
-            {/* Network logo + network label */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
               <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.6rem' }}>
                 This card is issued by Nexcribe Ltd.<br />
@@ -156,6 +123,7 @@ function VirtualCard({ card }) {
     </div>
   )
 }
+
 
 // ── Wallet Card (clickable) ───────────────────────────────────────────────────
 function WalletCard({ label, icon, balance_usd, balance_kes, sub, subValue, color, onClick }) {
@@ -305,7 +273,7 @@ export default function DashboardHome() {
           <p className="text-xs font-display font-semibold text-navy-500 uppercase tracking-widest mb-6">
             Virtual Card
           </p>
-          <VirtualCard card={card} />
+          <VirtualCard card={card} user={user} />
           <p className="text-navy-500 text-sm mt-3">
             Use this card for online purchases and subscriptions. It's linked to your account wallet.
           </p>
