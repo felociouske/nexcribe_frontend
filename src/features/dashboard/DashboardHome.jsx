@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { usersAPI, paymentsAPI } from '@/api/endpoints'
 import useAuthStore from '@/store/authStore'
-import { fmtUSD, fmtKES, fmtRelative, getErrorMessage } from '@/utils'
+import { fmtUSD, fmtKES, fmtRelative, getErrorMessage, STATUS_BADGES } from '@/utils'
 import { PageSpinner } from '@/components/ui/Spinner'
 import Modal from '@/components/ui/Modal'
 
@@ -26,8 +26,10 @@ function MiniCalc({ onClose, anchorRef }) {
 
   useEffect(() => {
     function handler(e) {
-      if (ref.current && !ref.current.contains(e.target) &&
-          anchorRef.current && !anchorRef.current.contains(e.target)) {
+      if (
+        ref.current && !ref.current.contains(e.target) &&
+        anchorRef.current && !anchorRef.current.contains(e.target)
+      ) {
         onClose()
       }
     }
@@ -58,8 +60,8 @@ function MiniCalc({ onClose, anchorRef }) {
   const calc = (a, b, o) => {
     if (o === '+') return +(a + b).toFixed(8)
     if (o === '-') return +(a - b).toFixed(8)
-    if (o === '×') return +(a * b).toFixed(8)
-    if (o === '÷') return b === 0 ? 0 : +(a / b).toFixed(8)
+    if (o === 'x') return +(a * b).toFixed(8)
+    if (o === '/') return b === 0 ? 0 : +(a / b).toFixed(8)
     return b
   }
 
@@ -78,10 +80,9 @@ function MiniCalc({ onClose, anchorRef }) {
 
   const btn = (label, action, style = 'num') => {
     const styles = {
-      num:  'bg-white border border-navy-100 text-navy-800 hover:bg-navy-50',
-      op:   'bg-teal-50 border border-teal-200 text-teal-700 hover:bg-teal-100 font-semibold',
-      fn:   'bg-navy-50 border border-navy-200 text-navy-600 hover:bg-navy-100',
-      eq:   'bg-teal-600 text-white hover:bg-teal-700 font-bold col-span-1',
+      num: 'bg-white border border-navy-100 text-navy-800 hover:bg-navy-50',
+      op:  'bg-teal-50 border border-teal-200 text-teal-700 hover:bg-teal-100 font-semibold',
+      fn:  'bg-navy-50 border border-navy-200 text-navy-600 hover:bg-navy-100',
     }
     return (
       <button
@@ -100,21 +101,19 @@ function MiniCalc({ onClose, anchorRef }) {
       className="absolute z-50 top-full mt-2 right-0 w-52 bg-white rounded-2xl shadow-2xl border border-navy-100 p-3"
       style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}
     >
-      {/* Display */}
       <div className="bg-navy-900 rounded-xl px-3 py-2 mb-2 text-right">
         {op && <p className="text-navy-400 text-xs font-mono">{prev} {op}</p>}
         <p className="text-white font-mono text-xl font-bold truncate">{display}</p>
       </div>
-      {/* Buttons */}
       <div className="grid grid-cols-4 gap-1.5">
         {btn('AC', clear, 'fn')}
         {btn('+/-', sign, 'fn')}
         {btn('%', pct, 'fn')}
-        {btn('÷', () => operate('÷'), 'op')}
+        {btn('/', () => operate('/'), 'op')}
         {btn('7', () => input('7'))}
         {btn('8', () => input('8'))}
         {btn('9', () => input('9'))}
-        {btn('×', () => operate('×'), 'op')}
+        {btn('x', () => operate('x'), 'op')}
         {btn('4', () => input('4'))}
         {btn('5', () => input('5'))}
         {btn('6', () => input('6'))}
@@ -169,7 +168,6 @@ function VirtualCard({ card, user }) {
         <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', borderRadius: '1rem', overflow: 'hidden', background: 'linear-gradient(135deg, #0d1b2e 0%, #1e3a5f 50%, #0a7c5c 100%)', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
           <div style={{ position: 'absolute', top: '-2rem', right: '-2rem', width: '10rem', height: '10rem', borderRadius: '9999px', background: 'rgba(255,255,255,0.05)' }} />
           <div style={{ position: 'absolute', bottom: '-2.5rem', left: '-2.5rem', width: '12rem', height: '12rem', borderRadius: '9999px', background: 'rgba(255,255,255,0.05)' }} />
-
           <div style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span className="font-display text-white" style={{ fontSize: '1.125rem', letterSpacing: '-0.025em' }}>Nexcribe</span>
@@ -178,7 +176,6 @@ function VirtualCard({ card, user }) {
                 <div style={{ width: '1.75rem', height: '1.75rem', borderRadius: '9999px', background: 'rgba(250,200,60,0.6)', marginLeft: '-0.75rem' }} />
               </div>
             </div>
-
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <div style={{ width: '2rem', height: '1.5rem', borderRadius: '0.25rem', background: 'linear-gradient(135deg, #d4af37, #f0d060)', flexShrink: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px', padding: '3px' }}>
                 {[...Array(4)].map((_, i) => (
@@ -187,11 +184,10 @@ function VirtualCard({ card, user }) {
               </div>
               {parts.map((group, i) => (
                 <span key={i} className="font-mono text-white" style={{ fontSize: '0.9rem', letterSpacing: '0.15em' }}>
-                  {i < 3 ? '••••' : group}
+                  {i < 3 ? '****' : group}
                 </span>
               ))}
             </div>
-
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
               <div>
                 <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2px' }}>Card Holder</p>
@@ -215,7 +211,7 @@ function VirtualCard({ card, user }) {
               </div>
               <div style={{ background: 'white', borderRadius: '0.25rem', padding: '0 0.5rem', height: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: '3.5rem' }}>
                 <p style={{ fontSize: '0.5rem', color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em' }}>CVV</p>
-                <p className="font-mono" style={{ fontSize: '0.875rem', fontWeight: 700, color: '#0d1b2e', letterSpacing: '0.1em' }}>{card.cvv || '•••'}</p>
+                <p className="font-mono" style={{ fontSize: '0.875rem', fontWeight: 700, color: '#0d1b2e', letterSpacing: '0.1em' }}>{card.cvv || '***'}</p>
               </div>
             </div>
             <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.6rem', lineHeight: 1.4 }}>
@@ -243,8 +239,8 @@ function WalletCard({ label, icon, balance_usd, balance_kes, sub, subValue, colo
 
   return (
     <div className="relative">
-      <button
-        className={`card ${c.bg} border ${c.border} ${c.hover} p-5 flex flex-col gap-3 w-full text-left cursor-pointer transition-all duration-200 group`}
+      <div
+        className={`card ${c.bg} border ${c.border} ${c.hover} p-5 flex flex-col gap-3 w-full text-left transition-all duration-200 group`}
       >
         <div className="flex items-center justify-between">
           <div className={`w-9 h-9 rounded-xl ${c.icon} flex items-center justify-center text-lg`}>
@@ -265,10 +261,9 @@ function WalletCard({ label, icon, balance_usd, balance_kes, sub, subValue, colo
                     : 'bg-navy-100 text-navy-500 hover:bg-teal-100 hover:text-teal-700'
                   }`}
               >
-                ⌗
+                #
               </button>
             )}
-            <span className="text-navy-300 text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span>
           </div>
         </div>
         <div className="border-t border-dashed border-navy-100" />
@@ -282,7 +277,7 @@ function WalletCard({ label, icon, balance_usd, balance_kes, sub, subValue, colo
             <span className="font-display font-semibold text-navy-600">{subValue}</span>
           </div>
         )}
-      </button>
+      </div>
 
       {showCalc && calcOpen && (
         <MiniCalc onClose={() => setCalcOpen(false)} anchorRef={calcBtnRef} />
@@ -291,19 +286,97 @@ function WalletCard({ label, icon, balance_usd, balance_kes, sub, subValue, colo
   )
 }
 
+// ── Transaction Detail Modal ──────────────────────────────────────────────────
+function TxnDetailModal({ txn, onClose }) {
+  if (!txn) return null
+  const isCredit = txn.type === 'CREDIT'
+
+  return (
+    <Modal open={!!txn} onClose={onClose} title="Transaction Detail">
+      <div className="space-y-4">
+        <div className={`rounded-2xl p-5 text-center ${isCredit ? 'bg-teal-50' : 'bg-red-50'}`}>
+          <p className={`font-display text-3xl font-bold ${isCredit ? 'text-teal-600' : 'text-coral-600'}`}>
+            {isCredit ? '+' : '-'}{fmtUSD(txn.amount_usd)}
+          </p>
+          {txn.amount_kes && (
+            <p className="text-navy-400 text-sm mt-1">{fmtKES(txn.amount_kes)}</p>
+          )}
+          <span className={`badge mt-2 inline-flex ${isCredit ? 'bg-teal-100 text-teal-700' : 'bg-red-100 text-red-600'}`}>
+            {txn.type}
+          </span>
+        </div>
+
+        <div className="space-y-0">
+          {[
+            { label: 'Code',        val: txn.transaction_code, mono: true },
+            { label: 'Description', val: txn.description },
+            { label: 'Wallet',      val: txn.wallet_type },
+            { label: 'Source',      val: txn.source },
+            { label: 'When',        val: fmtRelative(txn.created_at) },
+            txn.reference && { label: 'Reference', val: txn.reference },
+          ].filter(Boolean).map(({ label, val, mono }) => (
+            <div key={label} className="flex items-start justify-between gap-4 py-2.5 border-b border-navy-50 last:border-0">
+              <span className="text-xs font-display font-semibold text-navy-400 uppercase tracking-wide flex-shrink-0 pt-0.5">
+                {label}
+              </span>
+              <span className={`text-sm text-navy-700 text-right leading-snug ${mono ? 'font-mono font-semibold' : ''}`}>
+                {val || '-'}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <button onClick={onClose} className="btn-ghost w-full border border-navy-200">
+          Close
+        </button>
+      </div>
+    </Modal>
+  )
+}
+
+// ── Status badge helper ───────────────────────────────────────────────────────
+function TxnTypeBadge({ type }) {
+  const isCredit = type === 'CREDIT'
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold font-display
+      ${isCredit ? 'bg-teal-100 text-teal-700' : 'bg-red-100 text-red-600'}`}>
+      {type}
+    </span>
+  )
+}
+
+function StatusBadge({ status }) {
+  const map = {
+    PENDING:   'bg-yellow-100 text-yellow-700',
+    APPROVED:  'bg-teal-100 text-teal-700',
+    COMPLETED: 'bg-teal-100 text-teal-700',
+    REJECTED:  'bg-red-100 text-red-600',
+    FAILED:    'bg-red-100 text-red-600',
+  }
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold font-display
+      ${map[status] || 'bg-navy-100 text-navy-600'}`}>
+      {status}
+    </span>
+  )
+}
+
 // ── Main Dashboard ────────────────────────────────────────────────────────────
 export default function DashboardHome() {
   const { user } = useAuthStore()
   const qc = useQueryClient()
   const navigate = useNavigate()
-  const [depositModal, setDepositModal] = useState(false)
-  const [withdrawModal, setWithdrawModal] = useState(false)
 
-  const depositForm = useForm()
+  const [depositModal, setDepositModal]   = useState(false)
+  const [withdrawModal, setWithdrawModal] = useState(false)
+  const [selectedTxn, setSelectedTxn]    = useState(null)
+  const [txnTab, setTxnTab]              = useState('transactions')
+
+  const depositForm  = useForm()
   const withdrawForm = useForm()
   const withdrawMethod = withdrawForm.watch('method', 'MPESA')
 
-  // ── Queries ──
+  // ── Queries ──────────────────────────────────────────────────────────────────
   const { data: wallets, isLoading: walletsLoading } = useQuery({
     queryKey: ['wallets'],
     queryFn: () => usersAPI.getWallets().then(r => r.data),
@@ -325,13 +398,28 @@ export default function DashboardHome() {
     refetchOnMount: true,
   })
 
+  const { data: depositsData } = useQuery({
+    queryKey: ['my-deposits'],
+    queryFn: () => paymentsAPI.getDeposits().then(r => r.data),
+    enabled: txnTab === 'deposits',
+    staleTime: 0,
+  })
+
+  const { data: withdrawalsData } = useQuery({
+    queryKey: ['my-withdrawals'],
+    queryFn: () => paymentsAPI.getWithdrawals().then(r => r.data),
+    enabled: txnTab === 'withdrawals',
+    staleTime: 0,
+    refetchInterval: txnTab === 'withdrawals' ? 30000 : false,
+  })
+
   const { data: mpesaDetails } = useQuery({
     queryKey: ['mpesa-details'],
     queryFn: () => paymentsAPI.getMpesaDetails().then(r => r.data),
     staleTime: 5 * 60 * 1000,
   })
 
-  // ── Mutations ──
+  // ── Mutations ─────────────────────────────────────────────────────────────────
   const deposit = useMutation({
     mutationFn: (data) => paymentsAPI.requestDeposit(data),
     onSuccess: (res) => {
@@ -357,9 +445,9 @@ export default function DashboardHome() {
 
   const onDeposit = (data) => {
     deposit.mutate({
-      mpesa_code: data.mpesa_code.trim().toUpperCase(),
+      mpesa_code:   data.mpesa_code.trim().toUpperCase(),
       phone_number: data.phone_number.trim(),
-      amount_kes: parseFloat(data.amount_kes),
+      amount_kes:   parseFloat(data.amount_kes),
     })
   }
 
@@ -367,7 +455,7 @@ export default function DashboardHome() {
     withdraw.mutate({
       ...data,
       wallet_type: 'ACCOUNT',
-      amount_usd: parseFloat(data.amount_usd),
+      amount_usd:  parseFloat(data.amount_usd),
     })
   }
 
@@ -376,23 +464,32 @@ export default function DashboardHome() {
   const aw = wallets?.account_wallet
   const dw = wallets?.deposit_wallet
   const cw = wallets?.cashback_wallet
-  const recentTxns = txnData?.results || []
 
-  const hour = new Date().getHours()
+  const recentTxns  = txnData?.results   || []
+  const deposits    = depositsData?.results    || []
+  const withdrawals = withdrawalsData?.results || []
+
+  const hour     = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+
+  const txnTabs = [
+    { key: 'transactions', label: 'All Transactions' },
+    { key: 'deposits',     label: 'Deposits' },
+    { key: 'withdrawals',  label: 'Withdrawals' },
+  ]
 
   return (
     <div className="page">
 
-      {/* Greeting */}
+      {/* ── Greeting ── */}
       <motion.div {...fade(0)} className="mb-8">
         <h1 className="font-display text-2xl text-navy-900">
-          {greeting}, {user?.first_name || user?.username} 👋
+          {greeting}, {user?.first_name || user?.username}
         </h1>
         <p className="text-navy-500 text-sm mt-1">Here's your financial overview for today.</p>
       </motion.div>
 
-      {/* Virtual Card + Wallets */}
+      {/* ── Virtual Card + Wallets ── */}
       <div className="grid lg:grid-cols-2 gap-8 mb-8 items-start">
 
         {/* Virtual Card */}
@@ -425,7 +522,6 @@ export default function DashboardHome() {
               sub="Total earned"
               subValue={fmtUSD(aw?.total_earned_usd)}
               color="teal"
-              onClick={() => navigate('/dashboard/wallet')}
               showCalc
             />
             <WalletCard
@@ -436,7 +532,6 @@ export default function DashboardHome() {
               sub="Total deposited"
               subValue={fmtUSD(dw?.total_deposited_usd)}
               color="coral"
-              onClick={() => navigate('/dashboard/wallet')}
               showCalc
             />
             <WalletCard
@@ -447,17 +542,15 @@ export default function DashboardHome() {
               sub="Total earned"
               subValue={fmtUSD(cw?.total_earned_usd)}
               color="green"
-              onClick={() => navigate('/dashboard/wallet')}
             />
           </div>
 
-          {/* Deposit + Withdraw action buttons */}
+          {/* Action buttons */}
           <div className="grid grid-cols-2 gap-3 mt-4">
             <button
               onClick={() => setDepositModal(true)}
               className="btn-primary flex items-center justify-center gap-2 py-3"
             >
-              <span>⬇️</span>
               <span className="font-display font-semibold">Deposit</span>
             </button>
             <button
@@ -467,7 +560,6 @@ export default function DashboardHome() {
                 bg-white border-2 border-teal-500 text-teal-700 hover:bg-teal-50
                 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
-              <span>⬆️</span>
               <span>Withdraw</span>
             </button>
           </div>
@@ -479,55 +571,195 @@ export default function DashboardHome() {
         </motion.div>
       </div>
 
-      {/* Recent Transactions */}
+      {/* ── Transactions Section ── */}
       <motion.div {...fade(3)}>
+        {/* Header row */}
         <div className="flex items-center justify-between mb-4">
-          <h2 className="section-title">Recent Transactions</h2>
+          <div>
+            <h2 className="section-title">Recent Transactions</h2>
+            <p className="text-xs text-navy-400 mt-0.5">Tap any row to view full details</p>
+          </div>
           <Link to="/dashboard/wallet" className="text-sm text-teal-600 font-semibold hover:text-teal-500">
             See all →
           </Link>
         </div>
 
-        {recentTxns.length === 0 ? (
-          <div className="card p-10 text-center">
-            <p className="text-3xl mb-3">💳</p>
-            <p className="font-display font-bold text-navy-700 mb-1">No transactions yet</p>
-            <p className="text-navy-500 text-sm">Make a deposit to get started.</p>
-            <button onClick={() => setDepositModal(true)} className="btn-primary mt-4 inline-flex">
-              Make a Deposit
+        {/* Filter tabs */}
+        <div className="flex gap-2 mb-4 flex-wrap">
+          {txnTabs.map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setTxnTab(key)}
+              className={`px-4 py-2 rounded-xl text-sm font-display font-semibold transition-all ${
+                txnTab === key
+                  ? 'bg-teal-600 text-white shadow-sm'
+                  : 'bg-white border border-navy-200 text-navy-600 hover:border-teal-300'
+              }`}
+            >
+              {label}
             </button>
-          </div>
-        ) : (
-          <div className="card overflow-x-auto">
-            <table className="tbl min-w-[640px]">
-              <thead>
-                <tr>
-                  <th>Code</th>
-                  <th>Description</th>
-                  <th>Wallet</th>
-                  <th className="text-right">Amount</th>
-                  <th className="text-right">When</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentTxns.map(t => (
-                  <tr key={t.id}>
-                    <td><span className="txn-code">{t.transaction_code}</span></td>
-                    <td className="max-w-[180px] truncate text-navy-600 text-sm">{t.description}</td>
-                    <td><span className="badge-navy text-xs">{t.wallet_type}</span></td>
-                    <td className={`text-right font-display font-bold text-sm ${
-                      t.type === 'CREDIT' ? 'text-teal-600' : 'text-coral-600'
-                    }`}>
-                      {t.type === 'CREDIT' ? '+' : '-'}{fmtUSD(t.amount_usd)}
-                    </td>
-                    <td className="text-right text-navy-400 text-xs">{fmtRelative(t.created_at)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          ))}
+        </div>
+
+        {/* ── All Transactions ── */}
+        {txnTab === 'transactions' && (
+          recentTxns.length === 0 ? (
+            <div className="card p-10 text-center">
+              <p className="font-display font-bold text-navy-700 mb-1">No transactions yet</p>
+              <p className="text-navy-500 text-sm">Make a deposit to get started.</p>
+              <button onClick={() => setDepositModal(true)} className="btn-primary mt-4 inline-flex">
+                Make a Deposit
+              </button>
+            </div>
+          ) : (
+            <div className="card overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="tbl min-w-[640px]">
+                  <thead>
+                    <tr>
+                      <th>Code</th>
+                      <th>Description</th>
+                      <th>Source</th>
+                      <th className="text-right">Amount</th>
+                      <th>Status</th>
+                      <th className="text-right">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentTxns.map(t => (
+                      <tr
+                        key={t.id}
+                        onClick={() => setSelectedTxn(t)}
+                        className="cursor-pointer"
+                      >
+                        <td>
+                          <span className="txn-code">{t.transaction_code}</span>
+                        </td>
+                        <td className="max-w-[200px]">
+                          <span className="block truncate text-navy-600 text-sm" title={t.description}>
+                            {t.description}
+                          </span>
+                        </td>
+                        <td className="text-navy-500 text-xs">{t.source}</td>
+                        <td className={`text-right font-display font-bold text-sm whitespace-nowrap ${
+                          t.type === 'CREDIT' ? 'text-teal-600' : 'text-coral-600'
+                        }`}>
+                          {t.type === 'CREDIT' ? '+' : '-'}{fmtUSD(t.amount_usd)}
+                        </td>
+                        <td>
+                          <TxnTypeBadge type={t.type} />
+                        </td>
+                        <td className="text-right text-navy-400 text-xs whitespace-nowrap">
+                          {fmtRelative(t.created_at)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )
+        )}
+
+        {/* ── Deposits tab ── */}
+        {txnTab === 'deposits' && (
+          deposits.length === 0 ? (
+            <div className="card p-10 text-center">
+              <p className="font-display font-bold text-navy-700 mb-1">No deposits yet</p>
+              <p className="text-navy-500 text-sm">Submit your M-Pesa code after sending money.</p>
+              <button onClick={() => setDepositModal(true)} className="btn-primary mt-4 inline-flex">
+                Make a Deposit
+              </button>
+            </div>
+          ) : (
+            <div className="card overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="tbl min-w-[600px]">
+                  <thead>
+                    <tr>
+                      <th>Txn Code</th>
+                      <th>M-Pesa Code</th>
+                      <th>Phone</th>
+                      <th className="text-right">Amount</th>
+                      <th>Status</th>
+                      <th className="text-right">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {deposits.map(d => (
+                      <tr key={d.id}>
+                        <td><span className="txn-code">{d.transaction_code}</span></td>
+                        <td className="font-mono text-sm font-semibold text-navy-700">{d.mpesa_code}</td>
+                        <td className="text-navy-500 text-sm">{d.phone_number}</td>
+                        <td className="text-right">
+                          <span className="font-display font-bold text-teal-600 text-sm">
+                            +{fmtUSD(d.amount_usd)}
+                          </span>
+                          <span className="block text-navy-400 text-xs">{fmtKES(d.amount_kes)}</span>
+                        </td>
+                        <td>
+                          <StatusBadge status={d.status} />
+                        </td>
+                        <td className="text-right text-navy-400 text-xs whitespace-nowrap">
+                          {fmtRelative(d.created_at)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )
+        )}
+
+        {/* ── Withdrawals tab ── */}
+        {txnTab === 'withdrawals' && (
+          withdrawals.length === 0 ? (
+            <div className="card p-10 text-center">
+              <p className="font-display font-bold text-navy-700 mb-1">No withdrawals yet</p>
+              <p className="text-navy-500 text-sm">Withdrawals will appear here once you make one.</p>
+            </div>
+          ) : (
+            <div className="card overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="tbl min-w-[560px]">
+                  <thead>
+                    <tr>
+                      <th>Code</th>
+                      <th>Method</th>
+                      <th>Source</th>
+                      <th className="text-right">Amount</th>
+                      <th>Status</th>
+                      <th className="text-right">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {withdrawals.map(w => (
+                      <tr key={w.id}>
+                        <td><span className="txn-code">{w.transaction_code}</span></td>
+                        <td className="text-navy-600 text-sm">{w.method}</td>
+                        <td className="text-navy-500 text-xs">WITHDRAWAL</td>
+                        <td className="text-right font-display font-bold text-coral-600 text-sm whitespace-nowrap">
+                          -{fmtUSD(w.amount_usd)}
+                        </td>
+                        <td>
+                          <StatusBadge status={w.status} />
+                        </td>
+                        <td className="text-right text-navy-400 text-xs whitespace-nowrap">
+                          {fmtRelative(w.created_at)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )
         )}
       </motion.div>
+
+      {/* Transaction detail modal */}
+      <TxnDetailModal txn={selectedTxn} onClose={() => setSelectedTxn(null)} />
 
       {/* ── Deposit Modal ── */}
       <Modal
@@ -539,10 +771,10 @@ export default function DashboardHome() {
           <div className="bg-teal-50 border border-teal-100 rounded-xl p-4 space-y-2">
             <p className="font-display font-semibold text-teal-800 text-sm">How to deposit:</p>
             <ol className="space-y-1 text-sm text-teal-700">
-              <li>1. Send money via M-Pesa to <strong>{mpesaDetails?.phone_number || 'Loading…'} ({mpesaDetails?.account_name || 'Loading…'})</strong></li>
+              <li>1. Send money via M-Pesa to <strong>{mpesaDetails?.phone_number || 'Loading...'} ({mpesaDetails?.account_name || 'Loading...'})</strong></li>
               <li>2. Copy the M-Pesa confirmation code (e.g. QJK2ABC123)</li>
               <li>3. Fill in the form below and submit</li>
-              <li>4. Admin approves within 5–10 minutes → funds appear in Deposit Wallet</li>
+              <li>4. Admin approves within 5-10 minutes - funds appear in Deposit Wallet</li>
             </ol>
           </div>
 
@@ -600,7 +832,7 @@ export default function DashboardHome() {
               disabled={deposit.isPending}
               className="btn-primary flex-1 justify-center"
             >
-              {deposit.isPending ? 'Submitting…' : 'Submit Deposit'}
+              {deposit.isPending ? 'Submitting...' : 'Submit Deposit'}
             </button>
           </div>
         </form>
@@ -656,7 +888,7 @@ export default function DashboardHome() {
                     className="hidden"
                     defaultChecked={m === 'MPESA'}
                   />
-                  {m === 'MPESA' ? '📱 M-Pesa' : '💳 Card'}
+                  {m === 'MPESA' ? 'M-Pesa' : 'Card'}
                 </label>
               ))}
             </div>
@@ -698,7 +930,7 @@ export default function DashboardHome() {
               disabled={withdraw.isPending}
               className="btn-primary flex-1 justify-center"
             >
-              {withdraw.isPending ? 'Submitting…' : 'Request Withdrawal'}
+              {withdraw.isPending ? 'Submitting...' : 'Request Withdrawal'}
             </button>
           </div>
         </form>
