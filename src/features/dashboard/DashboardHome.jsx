@@ -230,7 +230,7 @@ function VirtualCard({ card, user }) {
 }
 
 // ── Wallet Card with Calculator ───────────────────────────────────────────────
-function WalletCard({ label, icon, balance_usd, balance_kes, sub, subValue, color, onClick, showCalc }) {
+function WalletCard({ label, icon, balance_usd, balance_kes, sub, subValue, color, showCalc }) {
   const [calcOpen, setCalcOpen] = useState(false)
   const calcBtnRef = useRef()
 
@@ -244,7 +244,6 @@ function WalletCard({ label, icon, balance_usd, balance_kes, sub, subValue, colo
   return (
     <div className="relative">
       <button
-        onClick={onClick}
         className={`card ${c.bg} border ${c.border} ${c.hover} p-5 flex flex-col gap-3 w-full text-left cursor-pointer transition-all duration-200 group`}
       >
         <div className="flex items-center justify-between">
