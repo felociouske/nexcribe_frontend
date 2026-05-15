@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
@@ -16,13 +16,137 @@ const fade = (i = 0) => ({
   transition: { duration: 0.4, delay: i * 0.07 },
 })
 
+// ── Mini Calculator ────────────────────────────────────────────────────────────
+function MiniCalc({ onClose, anchorRef }) {
+  const [display, setDisplay] = useState('0')
+  const [prev, setPrev] = useState(null)
+  const [op, setOp] = useState(null)
+  const [fresh, setFresh] = useState(false)
+  const ref = useRef()
+
+  useEffect(() => {
+    function handler(e) {
+      if (ref.current && !ref.current.contains(e.target) &&
+          anchorRef.current && !anchorRef.current.contains(e.target)) {
+        onClose()
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [onClose, anchorRef])
+
+  const input = (val) => {
+    if (fresh) { setDisplay(String(val)); setFresh(false); return }
+    if (display === '0' && val !== '.') { setDisplay(String(val)); return }
+    if (val === '.' && display.includes('.')) return
+    setDisplay(display + val)
+  }
+
+  const operate = (nextOp) => {
+    const cur = parseFloat(display)
+    if (prev !== null && op) {
+      const result = calc(prev, cur, op)
+      setDisplay(String(result))
+      setPrev(result)
+    } else {
+      setPrev(cur)
+    }
+    setOp(nextOp)
+    setFresh(true)
+  }
+
+  const calc = (a, b, o) => {
+    if (o === '+') return +(a + b).toFixed(8)
+    if (o === '-') return +(a - b).toFixed(8)
+    if (o === '×') return +(a * b).toFixed(8)
+    if (o === '÷') return b === 0 ? 0 : +(a / b).toFixed(8)
+    return b
+  }
+
+  const equals = () => {
+    if (prev === null || !op) return
+    const result = calc(prev, parseFloat(display), op)
+    setDisplay(String(result))
+    setPrev(null)
+    setOp(null)
+    setFresh(true)
+  }
+
+  const clear = () => { setDisplay('0'); setPrev(null); setOp(null); setFresh(false) }
+  const pct = () => setDisplay(String(parseFloat(display) / 100))
+  const sign = () => setDisplay(String(parseFloat(display) * -1))
+
+  const btn = (label, action, style = 'num') => {
+    const styles = {
+      num:  'bg-white border border-navy-100 text-navy-800 hover:bg-navy-50',
+      op:   'bg-teal-50 border border-teal-200 text-teal-700 hover:bg-teal-100 font-semibold',
+      fn:   'bg-navy-50 border border-navy-200 text-navy-600 hover:bg-navy-100',
+      eq:   'bg-teal-600 text-white hover:bg-teal-700 font-bold col-span-1',
+    }
+    return (
+      <button
+        key={label}
+        onClick={action}
+        className={`h-9 rounded-lg text-sm font-mono transition-all active:scale-95 ${styles[style]}`}
+      >
+        {label}
+      </button>
+    )
+  }
+
+  return (
+    <div
+      ref={ref}
+      className="absolute z-50 top-full mt-2 right-0 w-52 bg-white rounded-2xl shadow-2xl border border-navy-100 p-3"
+      style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}
+    >
+      {/* Display */}
+      <div className="bg-navy-900 rounded-xl px-3 py-2 mb-2 text-right">
+        {op && <p className="text-navy-400 text-xs font-mono">{prev} {op}</p>}
+        <p className="text-white font-mono text-xl font-bold truncate">{display}</p>
+      </div>
+      {/* Buttons */}
+      <div className="grid grid-cols-4 gap-1.5">
+        {btn('AC', clear, 'fn')}
+        {btn('+/-', sign, 'fn')}
+        {btn('%', pct, 'fn')}
+        {btn('÷', () => operate('÷'), 'op')}
+        {btn('7', () => input('7'))}
+        {btn('8', () => input('8'))}
+        {btn('9', () => input('9'))}
+        {btn('×', () => operate('×'), 'op')}
+        {btn('4', () => input('4'))}
+        {btn('5', () => input('5'))}
+        {btn('6', () => input('6'))}
+        {btn('-', () => operate('-'), 'op')}
+        {btn('1', () => input('1'))}
+        {btn('2', () => input('2'))}
+        {btn('3', () => input('3'))}
+        {btn('+', () => operate('+'), 'op')}
+        <button
+          onClick={() => input('0')}
+          className="h-9 col-span-2 rounded-lg text-sm font-mono bg-white border border-navy-100 text-navy-800 hover:bg-navy-50 transition-all active:scale-95"
+        >
+          0
+        </button>
+        {btn('.', () => input('.'))}
+        <button
+          onClick={equals}
+          className="h-9 rounded-lg text-sm bg-teal-600 text-white hover:bg-teal-700 font-bold transition-all active:scale-95"
+        >
+          =
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ── Virtual Card (flip on click) ──────────────────────────────────────────────
 function VirtualCard({ card, user }) {
   const [flipped, setFlipped] = useState(false)
   if (!card) return null
 
   const parts = (card.card_number || '').split(' ')
-  const lastFour = parts[3] || '••••'
   const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(' ') || 'Card Holder'
 
   return (
@@ -71,7 +195,6 @@ function VirtualCard({ card, user }) {
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
               <div>
                 <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2px' }}>Card Holder</p>
-                {/* Changed: was card.card_name */}
                 <p className="font-display font-semibold text-white" style={{ fontSize: '0.875rem', letterSpacing: '0.05em' }}>{fullName}</p>
               </div>
               <div style={{ textAlign: 'right' }}>
@@ -85,38 +208,20 @@ function VirtualCard({ card, user }) {
         {/* BACK */}
         <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)', borderRadius: '1rem', overflow: 'hidden', background: 'linear-gradient(135deg, #0a1628 0%, #0f2a47 60%, #082e22 100%)', boxShadow: '0 20px 60px rgba(0,0,0,0.35)' }}>
           <div style={{ width: '100%', height: '2.5rem', background: '#111', marginTop: '1.5rem' }} />
-
           <div style={{ padding: '0.875rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <div style={{ flex: 1, height: '2rem', borderRadius: '0.25rem', background: 'repeating-linear-gradient(90deg, #f0ece0 0px, #f0ece0 8px, #e0dcd0 8px, #e0dcd0 16px)', display: 'flex', alignItems: 'center', paddingLeft: '0.5rem' }}>
-                {/* Changed: was card.card_name */}
-                <span style={{ fontSize: '0.6rem', color: '#555', fontFamily: 'serif', fontStyle: 'italic' }}>
-                  {fullName}
-                </span>
+                <span style={{ fontSize: '0.6rem', color: '#555', fontFamily: 'serif', fontStyle: 'italic' }}>{fullName}</span>
               </div>
               <div style={{ background: 'white', borderRadius: '0.25rem', padding: '0 0.5rem', height: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: '3.5rem' }}>
                 <p style={{ fontSize: '0.5rem', color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em' }}>CVV</p>
                 <p className="font-mono" style={{ fontSize: '0.875rem', fontWeight: 700, color: '#0d1b2e', letterSpacing: '0.1em' }}>{card.cvv || '•••'}</p>
               </div>
             </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Card Number</span>
-              <span className="font-mono text-white" style={{ fontSize: '0.8rem', letterSpacing: '0.12em' }}>
-                •••• •••• •••• {lastFour}
-              </span>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
-              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.6rem' }}>
-                This card is issued by Nexcribe Ltd.<br />
-                Valid for authorised use only.
-              </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                <div style={{ width: '1.5rem', height: '1.5rem', borderRadius: '9999px', background: 'rgba(255,100,80,0.7)' }} />
-                <div style={{ width: '1.5rem', height: '1.5rem', borderRadius: '9999px', background: 'rgba(250,200,60,0.5)', marginLeft: '-0.5rem' }} />
-              </div>
-            </div>
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.6rem', lineHeight: 1.4 }}>
+              This card is issued by Nexcribe Ltd.<br />
+              Use responsibly. Subject to terms of service.
+            </p>
           </div>
         </div>
       </div>
@@ -124,43 +229,66 @@ function VirtualCard({ card, user }) {
   )
 }
 
+// ── Wallet Card with Calculator ───────────────────────────────────────────────
+function WalletCard({ label, icon, balance_usd, balance_kes, sub, subValue, color, onClick, showCalc }) {
+  const [calcOpen, setCalcOpen] = useState(false)
+  const calcBtnRef = useRef()
 
-// ── Wallet Card (clickable) ───────────────────────────────────────────────────
-function WalletCard({ label, icon, balance_usd, balance_kes, sub, subValue, color, onClick }) {
   const colors = {
-    teal:  { border: 'border-teal-200',  icon: 'bg-teal-50 text-teal-600',   amount: 'text-teal-700',  bg: 'bg-teal-50/30',   hover: 'hover:border-teal-400 hover:shadow-md hover:-translate-y-0.5' },
-    coral: { border: 'border-coral-200', icon: 'bg-coral-50 text-coral-600', amount: 'text-coral-700', bg: 'bg-coral-50/30',  hover: 'hover:border-coral-400 hover:shadow-md hover:-translate-y-0.5' },
-    green: { border: 'border-green-200', icon: 'bg-green-50 text-green-600', amount: 'text-green-700', bg: 'bg-green-50/30',  hover: 'hover:border-green-400 hover:shadow-md hover:-translate-y-0.5' },
+    teal:  { border: 'border-teal-200',  icon: 'bg-teal-50 text-teal-600',   amount: 'text-teal-700',  bg: 'bg-teal-50/30',  hover: 'hover:border-teal-400 hover:shadow-md hover:-translate-y-0.5' },
+    coral: { border: 'border-coral-200', icon: 'bg-coral-50 text-coral-600', amount: 'text-coral-700', bg: 'bg-coral-50/30', hover: 'hover:border-coral-400 hover:shadow-md hover:-translate-y-0.5' },
+    green: { border: 'border-green-200', icon: 'bg-green-50 text-green-600', amount: 'text-green-700', bg: 'bg-green-50/30', hover: 'hover:border-green-400 hover:shadow-md hover:-translate-y-0.5' },
   }
   const c = colors[color] || colors.teal
+
   return (
-    <button
-      onClick={onClick}
-      className={`card ${c.bg} border ${c.border} ${c.hover} p-5 flex flex-col gap-3 w-full text-left cursor-pointer transition-all duration-200 group`}
-    >
-      <div className="flex items-center justify-between">
-        <div className={`w-9 h-9 rounded-xl ${c.icon} flex items-center justify-center text-lg`}>
-          {icon}
+    <div className="relative">
+      <button
+        onClick={onClick}
+        className={`card ${c.bg} border ${c.border} ${c.hover} p-5 flex flex-col gap-3 w-full text-left cursor-pointer transition-all duration-200 group`}
+      >
+        <div className="flex items-center justify-between">
+          <div className={`w-9 h-9 rounded-xl ${c.icon} flex items-center justify-center text-lg`}>
+            {icon}
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-navy-400 text-xs font-display font-semibold uppercase tracking-wider">
+              {label}
+            </span>
+            {showCalc && (
+              <button
+                ref={calcBtnRef}
+                onClick={(e) => { e.stopPropagation(); setCalcOpen(v => !v) }}
+                title="Quick calculator"
+                className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs transition-all
+                  ${calcOpen
+                    ? 'bg-teal-600 text-white shadow-md'
+                    : 'bg-navy-100 text-navy-500 hover:bg-teal-100 hover:text-teal-700'
+                  }`}
+              >
+                ⌗
+              </button>
+            )}
+            <span className="text-navy-300 text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1">
-          <span className="text-navy-400 text-xs font-display font-semibold uppercase tracking-wider">
-            {label}
-          </span>
-          <span className="text-navy-300 text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+        <div className="border-t border-dashed border-navy-100" />
+        <div>
+          <p className={`font-display text-2xl ${c.amount}`}>{fmtUSD(balance_usd)}</p>
+          <p className="text-navy-400 text-xs mt-0.5">{fmtKES(balance_kes)}</p>
         </div>
-      </div>
-      <div className="border-t border-dashed border-navy-100" />
-      <div>
-        <p className={`font-display text-2xl ${c.amount}`}>{fmtUSD(balance_usd)}</p>
-        <p className="text-navy-400 text-xs mt-0.5">{fmtKES(balance_kes)}</p>
-      </div>
-      {sub && (
-        <div className="flex items-center justify-between text-xs border-t border-navy-100 pt-2 mt-auto">
-          <span className="text-navy-400">{sub}</span>
-          <span className="font-display font-semibold text-navy-600">{subValue}</span>
-        </div>
+        {sub && (
+          <div className="flex items-center justify-between text-xs border-t border-navy-100 pt-2 mt-auto">
+            <span className="text-navy-400">{sub}</span>
+            <span className="font-display font-semibold text-navy-600">{subValue}</span>
+          </div>
+        )}
+      </button>
+
+      {showCalc && calcOpen && (
+        <MiniCalc onClose={() => setCalcOpen(false)} anchorRef={calcBtnRef} />
       )}
-    </button>
+    </div>
   )
 }
 
@@ -299,6 +427,7 @@ export default function DashboardHome() {
               subValue={fmtUSD(aw?.total_earned_usd)}
               color="teal"
               onClick={() => navigate('/dashboard/wallet')}
+              showCalc
             />
             <WalletCard
               label="Deposit"
@@ -309,6 +438,7 @@ export default function DashboardHome() {
               subValue={fmtUSD(dw?.total_deposited_usd)}
               color="coral"
               onClick={() => navigate('/dashboard/wallet')}
+              showCalc
             />
             <WalletCard
               label="Extras"

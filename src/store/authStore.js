@@ -35,11 +35,26 @@ const useAuthStore = create(
 
       register: async (formData) => {
         set({ isLoading: true })
-        const { data } = await authAPI.register(formData)
-        localStorage.setItem('access_token', data.access)
-        localStorage.setItem('refresh_token', data.refresh)
-        set({ user: data.user, isAuthenticated: true, isLoading: false })
-        return data
+        try {
+          const { data } = await authAPI.register(formData)
+          localStorage.setItem('access_token', data.access)
+          localStorage.setItem('refresh_token', data.refresh)
+
+          // Fetch full user profile so first_name/last_name are available
+          // immediately after registration (card holder name, profile, etc.)
+          try {
+            const { data: me } = await usersAPI.getMe()
+            set({ user: me, isAuthenticated: true, isLoading: false })
+            return { ...data, user: me }
+          } catch (_) {
+            // Fallback to registration response user if getMe fails
+            set({ user: data.user, isAuthenticated: true, isLoading: false })
+            return data
+          }
+        } catch (err) {
+          set({ isLoading: false })
+          throw err
+        }
       },
 
       logout: async () => {

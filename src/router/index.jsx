@@ -23,7 +23,6 @@ import WithdrawalPolicy from '@/features/legal/WithdrawalPolicy'
 // Dashboard pages
 import DashboardHome from '@/features/dashboard/DashboardHome'
 import PlansPage from '@/features/plans/PlansPage'
-import AffiliatesPage from '@/features/affiliates/AffiliatesPage'
 import WritingPage from '@/features/writing/WritingPage'
 import WritingJobPage from '@/features/writing/WritingJobPage'
 import TranscriptionPage from '@/features/transcription/TranscriptionPage'
@@ -31,7 +30,6 @@ import TranscriptionTaskPage from '@/features/transcription/TranscriptionTaskPag
 import GamesPage from '@/features/games/GamesPage'
 import GamePlayPage from '@/features/games/GamePlayPage'
 import WheelPage from '@/features/wheel/WheelPage'
-import WalletPage from '@/features/payments/WalletPage'
 import NotificationsPage from '@/features/notifications/NotificationsPage'
 import ProfilePage from '@/features/auth/ProfilePage'
 
@@ -71,7 +69,6 @@ export default function AppRouter() {
       <Route element={<PrivateRoute><DashboardLayout /></PrivateRoute>}>
         <Route path="/dashboard"                        element={<DashboardHome />} />
         <Route path="/dashboard/plans"                  element={<PlansPage />} />
-        <Route path="/dashboard/affiliates"             element={<AffiliatesPage />} />
         <Route path="/dashboard/writing"                element={<WritingPage />} />
         <Route path="/dashboard/writing/:id"            element={<WritingJobPage />} />
         <Route path="/dashboard/transcription"          element={<TranscriptionPage />} />
@@ -79,7 +76,6 @@ export default function AppRouter() {
         <Route path="/dashboard/games"                  element={<GamesPage />} />
         <Route path="/dashboard/games/:slug"            element={<GamePlayPage />} />
         <Route path="/dashboard/wheel"                  element={<WheelPage />} />
-        <Route path="/dashboard/wallet"                 element={<WalletPage />} />
         <Route path="/dashboard/notifications"          element={<NotificationsPage />} />
         <Route path="/dashboard/profile"                element={<ProfilePage />} />
       </Route>

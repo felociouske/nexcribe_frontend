@@ -10,8 +10,6 @@ const NAV = [
   { to: '/dashboard/transcription', icon: '🎧', label: 'Transcription' },
   { to: '/dashboard/games',         icon: '🎮', label: 'Games' },
   { to: '/dashboard/wheel',         icon: '🎡', label: 'Lucky Wheel' },
-  { to: '/dashboard/affiliates',    icon: '◉', label: 'Leads' },
-  { to: '/dashboard/wallet',        icon: '◎', label: 'Wallet' },
   { to: '/dashboard/notifications', icon: '◻', label: 'Notifications' },
 ]
 
